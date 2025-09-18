@@ -1,0 +1,35 @@
+name: Auto Release Only Changed Files
+
+on:
+  push:
+    paths:
+      - 'watched-folder/test-folder/**'  # İzlenen klasör ve alt klasörleri
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Get changed files
+        id: changed_files
+        run: |
+          # Son committe değişen dosyaları al ve sadece izlenen klasördeki dosyaları filtrele
+          FILES=$(git diff --name-only HEAD~1 HEAD | grep '^watched-folder/test-folder/' || true)
+          echo "changed_files=$FILES" >> $GITHUB_OUTPUT
+
+      - name: Show changed files
+        run: |
+          echo "Changed files:"
+          echo "${{ steps.changed_files.outputs.changed_files }}"
+
+      - name: Create Release with changed files
+        if: steps.changed_files.outputs.changed_files != ''
+        uses: ncipollo/release-action@v1
+        with:
+          tag: 'v${{ github.run_number }}'
+          name: 'Release ${{ github.run_number }}'
+          body: 'Automatically created release with updated file(s)'
+          files: ${{ steps.changed_files.outputs.changed_files }}
