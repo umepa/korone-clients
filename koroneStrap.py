@@ -83,7 +83,6 @@ def get_executable_paths(folder):
     paths = []
     for ver in iter_version_dirs():
         if folder in ["2017", "2018"]:
-            # 2017/2018 için doğru klasör
             for exe_path in glob.glob(os.path.join(ver, f"{folder}L", "ProjectXPlayerBeta.exe")):
                 paths.append(exe_path)
         else:
@@ -288,7 +287,6 @@ def download_bootstrapper():
         urllib.request.urlretrieve(BOOTSTRAPPER_URL, BOOTSTRAPPER_FILE, reporthook=show_progress)
         print(Fore.GREEN + "\n[*] Download completed successfully!")
         
-        # Windows için direkt aç
         if get_system_info()['is_windows']:
             os.startfile(BOOTSTRAPPER_FILE)
         else:
@@ -402,29 +400,47 @@ def main_menu():
         sys_info = get_system_info()
         print(Fore.MAGENTA + "made by umepa on korone (forked from https://github.com/reprovision/koroneStrap)\n")
         print(Fore.YELLOW + "Select your option:")
-        print(Fore.GREEN + "1 - 2017 (Only Browser)")
-        print(Fore.GREEN + "2 - 2018 (Only Browser)")
-        print(Fore.GREEN + "3 - 2020 (Browser or Client)")
-        print(Fore.GREEN + "4 - 2021 (Browser or Client)")
-        print(Fore.GREEN + "5 - Korone Fps Unlocker")
-        print(Fore.GREEN + "6 - Set FastFlags")
-        print(Fore.BLUE + "7 - Download/Update Bootstrapper")
+        print(Fore.GREEN + "1 - Open Korone On Browser")
+        print(Fore.GREEN + "2 - 2017 (Only Browser)")
+        print(Fore.GREEN + "3 - 2018 (Only Browser)")
+        print(Fore.GREEN + "4 - 2020 (Browser or Client)")
+        print(Fore.GREEN + "5 - 2021 (Browser or Client)")
+        print(Fore.GREEN + "6 - Korone Fps Unlocker")
+        print(Fore.GREEN + "7 - Set FastFlags")
+        print(Fore.BLUE + "8 - Download/Update Bootstrapper")
         print(Fore.RED + "0 - Exit")
         
         choice = input(Fore.YELLOW + "\nEnter your choice: ").strip()
         if choice == "1":
-            launch_version("2017", only_browser=True)
+            # Browser modunda açmak için verdiğin exe yolunu kullanıyoruz
+            BROWSER_LAUNCH_PATH = r"C:\Users\Umutcan\AppData\Local\ProjectX\Versions\version-7e043f9d229d4b9a\ProjectXPlayerLauncher.exe"
+            try:
+                if get_system_info()['is_windows']:
+                    subprocess.Popen([BROWSER_LAUNCH_PATH, "-browser"])
+                else:
+                    wine_cmd = "wine64"
+                    try:
+                        subprocess.check_output([wine_cmd, "--version"], stderr=subprocess.DEVNULL)
+                    except Exception:
+                        wine_cmd = "wine"
+                    subprocess.Popen([wine_cmd, BROWSER_LAUNCH_PATH, "-browser"])
+                print(Fore.GREEN + "[*] Browser launched successfully!")
+            except Exception as e:
+                print(Fore.RED + f"[!] Launch failed: {e}")
+            press_any_key()
         elif choice == "2":
-            launch_version("2018", only_browser=True)
+            launch_version("2017", only_browser=True)
         elif choice == "3":
-            launch_version("2020L")
+            launch_version("2018", only_browser=True)
         elif choice == "4":
-            launch_version("2021M")
+            launch_version("2020L")
         elif choice == "5":
-            download_and_launch_fps_unlocker()
+            launch_version("2021M")
         elif choice == "6":
-            ask_fastflags()
+            download_and_launch_fps_unlocker()
         elif choice == "7":
+            ask_fastflags()
+        elif choice == "8":
             download_bootstrapper()
         elif choice == "0":
             print(Fore.CYAN + "Goodbye!")
